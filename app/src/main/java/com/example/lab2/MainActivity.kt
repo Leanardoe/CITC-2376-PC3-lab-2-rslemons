@@ -13,7 +13,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -23,8 +22,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+
+data class Task(val description: String, var isCompleted: Boolean = false)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,9 +86,8 @@ fun TaskInputField(taskText: String, onTaskTextChange: (String) -> Unit, onAddTa
 
         Button(
             onClick = onAddTask,
-            modifier = Modifier
-                .background(Color(0xFF6200EA), shape = RoundedCornerShape(8.dp))
-                .padding(8.dp)
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EA)),
+            modifier = Modifier.padding(8.dp)
         ) {
             Text("Add Task", color = Color.White)
         }
@@ -137,15 +137,13 @@ fun TaskItem(task: Task, onDeleteTask: (Task) -> Unit) {
 
         IconButton(onClick = { onDeleteTask(task) }) {
             Icon(
-                painter = painterResource(id = android.R.drawable.ic_delete),
+                imageVector = Icons.Default.Delete,
                 contentDescription = "Delete Task",
                 tint = Color.Red
             )
         }
     }
 }
-
-data class Task(val description: String, var isCompleted: Boolean = false)
 
 @Preview(showBackground = true)
 @Composable
