@@ -1,4 +1,4 @@
-package com.example.taskmanager
+package com.example.lab2
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -50,22 +50,41 @@ fun MainScreen() {
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Text(
+            text = "Task Manager",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .padding(bottom = 16.dp)
+        )
+
         TaskInputField(
             taskText = taskText,
             onTaskTextChange = { taskText = it },
             onAddTask = {
                 if (taskText.isNotBlank()) {
                     taskList.add(Task(taskText))
-                    taskText = "" // Clear input field
+                    taskText = ""
                 }
             }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TaskList(taskList = taskList, onDeleteTask = { taskList.remove(it) })
+        TaskList(
+            taskList = taskList,
+            onTaskCheckChanged = { task, isChecked ->
+                val index = taskList.indexOf(task)
+                if (index != -1) {
+                    taskList[index] = task.copy(isCompleted = isChecked)
+                }
+            },
+            onDeleteTask = { taskList.remove(it) }
+        )
     }
 }
+
+
 
 @Composable
 fun TaskInputField(taskText: String, onTaskTextChange: (String) -> Unit, onAddTask: () -> Unit) {
@@ -95,19 +114,26 @@ fun TaskInputField(taskText: String, onTaskTextChange: (String) -> Unit, onAddTa
 }
 
 @Composable
-fun TaskList(taskList: List<Task>, onDeleteTask: (Task) -> Unit) {
+fun TaskList(
+    taskList: List<Task>,
+    onTaskCheckChanged: (Task, Boolean) -> Unit,
+    onDeleteTask: (Task) -> Unit
+) {
     LazyColumn {
         items(taskList) { task ->
-            TaskItem(task, onDeleteTask)
+            TaskItem(task, onTaskCheckChanged, onDeleteTask)
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
 
-@Composable
-fun TaskItem(task: Task, onDeleteTask: (Task) -> Unit) {
-    var isChecked by remember { mutableStateOf(task.isCompleted) }
 
+@Composable
+fun TaskItem(
+    task: Task,
+    onTaskCheckChanged: (Task, Boolean) -> Unit,
+    onDeleteTask: (Task) -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -117,11 +143,8 @@ fun TaskItem(task: Task, onDeleteTask: (Task) -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(
-            checked = isChecked,
-            onCheckedChange = {
-                isChecked = it
-                task.isCompleted = it
-            }
+            checked = task.isCompleted,
+            onCheckedChange = { isChecked -> onTaskCheckChanged(task, isChecked) }
         )
 
         Text(
@@ -131,8 +154,8 @@ fun TaskItem(task: Task, onDeleteTask: (Task) -> Unit) {
             modifier = Modifier
                 .weight(1f)
                 .padding(start = 8.dp),
-            textDecoration = if (isChecked) TextDecoration.LineThrough else TextDecoration.None,
-            color = if (isChecked) Color.Gray else Color.Black
+            textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
+            color = if (task.isCompleted) Color.Gray else Color.Black
         )
 
         IconButton(onClick = { onDeleteTask(task) }) {
